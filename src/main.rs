@@ -1,3 +1,21 @@
-fn main() {
-    println!("Hello, world!");
+use reqwest::Client;
+use serde_json::json;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    println!("Welcome to TxnOS Terminal!");
+    let client = Client::new();
+
+    let response = client.post("http://127.0.0.1:8080")
+        .json(&json!({
+            "jawn": "that one"
+        }))
+        .send()
+        .await?;
+
+    let response_text = response.text().await?;
+
+    println!("Response: {}", response_text);
+
+    Ok(())
 }
