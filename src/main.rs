@@ -1,34 +1,69 @@
 use reqwest::Client;
 use serde_json::json;
-use std::io;
+use std::collections::HashMap;
+use repl_rs::{Command, Parameter, Value};
+use repl_rs::{Convert, Repl};
+use tokio::runtime::Runtime;
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+
+async fn full_send(s: String) -> Result<(), Box<dyn std::error::Error>> {
+
+    let client = Client::new();
+
+    let response = client.post("http://127.0.0.1:8080")
+        .json(&json!({
+            "jawn": s
+        }))
+        .send()
+        .await?;
+
+    let response_text = response.text().await?;
+
+    println!("Response: {}", response_text);
+    
+    Ok(())
+}
+
+fn tinker_send<T>(args: HashMap<String, Value>, _context: &mut T) -> repl_rs::Result<Option<String>> {
+    let rt = Runtime::new().unwrap();
+    let result = rt.block_on(full_send(args["what"].to_string()));
+    println!("Result: {:?}", result);
+    Ok(Some(format!("Sent this: {}", args["what"])))
+}
+
+
+// #[tokio::main]
+// async fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> repl_rs::Result<()> {
     println!("Welcome to TxnOS Terminal!");
 
-    loop {
-        let mut command = String::new();
+    let mut repl = Repl::new(())
+        .with_name("TxnOS Terminal")
+        .with_version("0.0.1")
+        .with_description("OEM CLI terminal for TxnOS")
+        .add_command(
+            Command::new("tinker_send", tinker_send)
+                .with_parameter(Parameter::new("what").set_required(true)?)?
+                .with_help("Send a test transaction to the kernel"),
+        );
 
-        io::stdin()
-            .read_line(&mut command)
-            .expect("Input error");
+        repl.run()
 
-        println!("This is your command: {command}");
 
-        let client = Client::new();
+    // loop {
+    //     let mut command = String::new();
 
-        let response = client.post("http://127.0.0.1:8080")
-            .json(&json!({
-                "jawn": "that one"
-            }))
-            .send()
-            .await?;
+    //     io::stdin()
+    //         .read_line(&mut command)
+    //         .expect("Input error");
 
-        let response_text = response.text().await?;
+    //     println!("This is your command: {command}");
 
-        println!("Response: {}", response_text);
 
-    }
 
-    Ok(())
+    //     println!("Response: {}", response_text);
+
+    // }
+
+    //Ok(())
 }
