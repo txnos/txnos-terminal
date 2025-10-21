@@ -31,9 +31,6 @@ fn tinker_send<T>(args: HashMap<String, Value>, _context: &mut T) -> repl_rs::Re
     Ok(Some(format!("Sent this: {}", args["what"])))
 }
 
-
-// #[tokio::main]
-// async fn main() -> Result<(), Box<dyn std::error::Error>> {
 fn main() -> repl_rs::Result<()> {
     println!("Welcome to TxnOS Terminal!");
 
@@ -48,22 +45,4 @@ fn main() -> repl_rs::Result<()> {
         );
 
         repl.run()
-
-
-    // loop {
-    //     let mut command = String::new();
-
-    //     io::stdin()
-    //         .read_line(&mut command)
-    //         .expect("Input error");
-
-    //     println!("This is your command: {command}");
-
-
-
-    //     println!("Response: {}", response_text);
-
-    // }
-
-    //Ok(())
 }
