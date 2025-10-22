@@ -12,7 +12,16 @@ async fn full_send(s: String) -> Result<(), Box<dyn std::error::Error>> {
 
     let response = client.post("http://127.0.0.1:8080")
         .json(&json!({
-            "jawn": s
+            "ver": 1,
+            "txn": {
+                "from": "abcdef",
+                "st": {
+                    "obj": "/x/y/z",
+                    "chash": "0xabcdef",
+                    "nvalue": "fedcba"
+                }
+            },
+            "sig": "abcdef"
         }))
         .send()
         .await?;
