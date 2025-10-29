@@ -1,14 +1,43 @@
 use reqwest::Client;
 use serde_json::json;
+use serde_json;
 use std::collections::HashMap;
 use repl_rs::{Command, Parameter, Value};
 use repl_rs::{Convert, Repl};
 use tokio::runtime::Runtime;
+use blake2::{ Blake2s256, Digest };
 
 
 async fn full_send(s: String) -> Result<(), Box<dyn std::error::Error>> {
 
     let client = Client::new();
+
+    let mut hasher = Blake2s256::new();
+
+    let response_json = &json!({
+            "ver": 1,
+            "txn": {
+                "from": "abcdef",
+                "st": {
+                    "obj": "/x/y/z",
+                    "chash": "0xabcdef",
+                    "nvalue": s
+                }
+            },
+            "sig": "abcdef"
+        });
+
+    let response_json_string = serde_json::to_string(response_json)?;
+    let response_json_bytes = serde_json::to_vec(response_json)?;
+
+    hasher.update(&response_json_bytes);
+
+    let hasher_result = hasher.finalize();
+
+    let hex_result = hex::encode(hasher_result);
+
+    println!("response_json_string: {}", response_json_string);
+    println!("hash: {}", hex_result);
 
     let response = client.post("http://127.0.0.1:8080")
         .json(&json!({
@@ -18,7 +47,7 @@ async fn full_send(s: String) -> Result<(), Box<dyn std::error::Error>> {
                 "st": {
                     "obj": "/x/y/z",
                     "chash": "0xabcdef",
-                    "nvalue": "fedcba"
+                    "nvalue": s
                 }
             },
             "sig": "abcdef"
